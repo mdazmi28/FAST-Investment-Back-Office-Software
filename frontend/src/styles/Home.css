@@ -1,0 +1,20 @@
+.sidebar {
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+.sidebar .nav-link {
+  color: #333;
+}
+.sidebar .nav-link.active {
+  background-color: #e9ecef;
+}
+.main-content {
+  height: 100vh;
+  overflow-y: auto;
+}
+.stat-card {
+  transition: transform 0.3s;
+}
+.stat-card:hover {
+  transform: translateY(-5px);
+}
