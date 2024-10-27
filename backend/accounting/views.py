@@ -1,13 +1,20 @@
 from rest_framework import generics
 from .models import Account,Transaction,FundTransfer
-from .serializers import AccountSerializer,TransactionSerializer,TransactionApproveSerializer,FundTransferSerializer
+from .serializers import (AccountSerializer
+                          ,TransactionSerializer
+                          ,TransactionApproveSerializer
+                          ,FundTransferSerializer
+                          ,PendingPaymentsSerializer
+                        )
 from .permissions import IsAdminUser
 from user_app.permissions import IsSuperUser
 from rest_framework.permissions import AllowAny,IsAuthenticated  
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework import status 
 from rest_framework.exceptions import ValidationError
 from django.db import transaction as db_transaction
+from django.utils import timezone
 
 class AllUserBalanceDetailsView(generics.ListAPIView):
     queryset=Account.objects.all()
@@ -36,16 +43,38 @@ class TransactionCreateView(generics.CreateAPIView):
     permission_classes = [IsAdminUser]
 
     def perform_create(self, serializer):
-        transaction = serializer.save(issued_by=self.request.user, status='pending')
-        # transaction = serializer.save()  # Save the transaction first
-        user = transaction.user  # Get the user from the saved transaction
+        try:
+            # Save the transaction with issued_by, status, and issued_date
+            transaction = serializer.save(
+                issued_by=self.request.user,
+                status='pending',
+                issued_date=timezone.now()
+            )
+        
+            user = transaction.user  # Get the user related to this transaction
+        
+            # Get or create the account for the user
+            account, created = Account.objects.get_or_create(user=user)
 
-        # Check if the account exists; if not, create one
-        account, created = Account.objects.get_or_create(user=user)
-        # Only update the account balance if it's a deposit
-        if transaction.transaction_type == 'deposit':
-            account = transaction.user.account
-            account.update_balance(transaction.amount, transaction.transaction_type)
+            # Update the balance if it's a deposit
+            if transaction.transaction_type == 'deposit':
+
+                try:
+                    account.update_balance(transaction.amount, transaction.transaction_type)
+                    transaction.status='completed'
+                    transaction.save()
+                except Exception as e:
+                    print("trnasaction failed")
+                    transaction.status='completed'
+                    transaction.save()
+
+
+        except ValidationError as e:
+            print(e.detail)  # Logs specific validation errors
+class PendingPaymentsView(generics.ListAPIView):
+    queryset=Transaction.objects.filter(transaction_type='payment',status='pending')
+    serializer_class=PendingPaymentsSerializer
+    permission_classes=[AllowAny]
 
 class TransactionApproveView(generics.UpdateAPIView):
     queryset = Transaction.objects.all()
@@ -54,28 +83,33 @@ class TransactionApproveView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         transaction = self.get_object()
-
         serializer = self.get_serializer(transaction, data=request.data, partial=True)
+        
         if serializer.is_valid():
-            self.perform_update(serializer)
-
-            # Check the status and update the balance accordingly
-            status = serializer.validated_data.get('status')
+            status_update = serializer.validated_data.get('status')
             account = transaction.user.account
 
-            if status == 'approved':
+            # Check if the transaction is being approved and balance is sufficient
+            if status_update == 'approved':
                 try:
-                    account.update_balance(transaction.amount, transaction.transaction_type)  # Update balance for approved transactions
-                    serializer.status='approved'
-                except ValueError as e:
-                    return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                    # Attempt to update the balance
+                    account.update_balance(transaction.amount, transaction.transaction_type)
+                    
+                    # Only set the status to "approved" if balance update succeeds
+                    transaction.status = 'approved'
+                    transaction.save()
+                    
+                except ValidationError as e:
+                    # Return error response if balance is insufficient
+                    return Response({"detail": "Insufficient balance for approval."}, status=status.HTTP_400_BAD_REQUEST)
             
-            if status=='declined':
-                serializer.status='declined'
-
-            # If the status is declined, we don't do anything with the balance
-            return Response(serializer.data)
-
+            elif status_update == 'declined':
+                transaction.status = 'declined'
+                transaction.save()
+            
+            # Return the updated transaction data
+            return Response(self.get_serializer(transaction).data)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class FundTransferView(generics.CreateAPIView):

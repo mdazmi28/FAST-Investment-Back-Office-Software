@@ -18,7 +18,17 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ['id', 'user', 'amount', 'transaction_type', 'trans_mode', 'issued_by', 'issued_date', 'status']
+        read_only_fields = ['issued_by', 'issued_date', 'status']  # Mark these fields as read-only
 
+class PendingPaymentsSerializer(serializers.ModelSerializer):
+    user=ShortUserDetailsSerializer(read_only=True)
+    issued_by=ShortUserDetailsSerializer(read_only=True)
+    
+    class Meta:
+        model=Transaction
+        fields=['id','user','amount','issued_by','issued_date','status']
+
+    
 class TransactionApproveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
