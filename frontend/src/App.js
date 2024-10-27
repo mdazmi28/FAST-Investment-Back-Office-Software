@@ -8,6 +8,8 @@ import Default from './pages/Default';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Transactions from './pages/Transactions';
+import PendingPayments from './pages/PendingPayments';
 
 
 
@@ -38,6 +40,14 @@ const router = createBrowserRouter([
         path: "/users",
         element: <UserList />,
       },
+      {
+        path:"transactions",
+        element:<Transactions/>,
+      },
+      {
+        path:"/pending-payments",
+        element:<PendingPayments/>
+      }
     ],
   },
   {

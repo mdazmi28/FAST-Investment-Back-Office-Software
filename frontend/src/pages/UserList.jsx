@@ -29,7 +29,7 @@ const UserList = () => {
         .catch((err) => alert('Error updating active status: ' + err));
     }
 
-    console.log(userList);
+   
     return (
         <div className="container">
             <div className="row">

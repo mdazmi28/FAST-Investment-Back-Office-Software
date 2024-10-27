@@ -8,6 +8,20 @@ import { Outlet, Link } from "react-router-dom";
 import React from 'react'
 
 const Home = () => {
+    const [userStatus, setUserStatus] = useState('')
+
+    useEffect(() => {
+        if (!userStatus) {
+            getUserStatus();
+        }
+    }, [])
+
+    const getUserStatus = () => {
+        api.get('api/user-status/')
+            .then((res) => res.data)
+            .then((data) => setUserStatus(data))
+    }
+
     return (
         <div className="container-fluid">
             <div className="row">
@@ -17,34 +31,64 @@ const Home = () => {
                         <h2 className="h4 px-3 pb-3 border-bottom">MyDashboard</h2>
                         <ul className="nav flex-column">
                             <li className="nav-item">
-                                
-                                    <i className="bi bi-bar-chart-line me-2"></i>
-                                    <Link to={`overview`}>Overview</Link>
-                               
-                            </li>
-                            <li className="nav-item">
 
-                                <i className="bi bi-people me-2"></i>
-                                <Link to={`users`}>Users</Link>
+                                <i className="bi bi-bar-chart-line me-2"></i>
+                                <Link to={`overview`}>Overview</Link>
 
                             </li>
+                            {userStatus.status === 'superadmin' &&
+                                <>
+                                    <div className="nav-link">
+                                        <li className="nav-item">
+
+                                            <i className="bi bi-people me-2"></i>
+                                            <Link to={`users`}>Users</Link>
+
+                                        </li>
+                                    </div>
+                                    <div className="nav-link">
+                                        <li className="nav-item">
+
+                                            <i className="bi bi-collection"></i>
+                                            <Link to={`pending-payments`}>Withdraw Request</Link>
+
+                                        </li>
+                                    </div>
+
+                                </>
+
+                            }
+                            {(userStatus.status === 'superadmin' || userStatus.status === 'admin') &&
+                                <>
+                                    <div className='nav-link'>
+
+                                        <li className="nav-item">
+
+                                            <i className="bi bi-wallet-fill"></i>
+                                            <Link to={``}>Fund Transfer</Link>
+
+                                        </li>
+                                    </div>
+                                    <div className="nav-link">
+                                        <li className="nav-item">
+
+                                            <i className="bi bi-cash-coin"></i>
+                                            <Link to={`transactions`}>Transaction</Link>
+
+                                        </li>
+                                    </div>
+
+                                </>
+
+
+                            }
+
+
                             <li className="nav-item">
-                                
-                                    <i className="bi bi-cart me-2"></i>
-                                    Orders
-                                
-                            </li>
-                            <li className="nav-item">
-                                
-                                    <i className="bi bi-exclamation-circle me-2"></i>
-                                    Alerts
-                                
-                            </li>
-                            <li className="nav-item">
-                               
-                                    <i className="bi bi-gear me-2"></i>
-                                    Settings
-                               
+
+                                <i className="bi bi-gear me-2"></i>
+                                Settings
+
                             </li>
                         </ul>
                         <hr />
