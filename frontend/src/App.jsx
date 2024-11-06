@@ -12,6 +12,7 @@ import Transactions from './pages/Transactions';
 import PendingPayments from './pages/PendingPayments';
 import Dashboard from './pages/Dashboard';
 import InvesmentChartMonthWide from './components/InvesmentChartMonthWide';
+import FundTransfer from './pages/FundTransfer';
 
 
 
@@ -55,7 +56,11 @@ const router = createBrowserRouter([
       {
         path:"/pending-payments",
         element:<PendingPayments/>
-      }
+      },
+      {
+        path:"/fund-transfer",
+        element:<FundTransfer/>
+      },
     ],
   },
   {
