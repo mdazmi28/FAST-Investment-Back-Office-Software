@@ -6,7 +6,7 @@ const FundTransfer = () => {
   const [fromUser, setFromUser] = useState("");
   const [toUser, setToUser] = useState("");
 
-  console.log(fromUser)
+//   console.log(fromUser)
 
   useEffect(() => {
     api
@@ -32,7 +32,7 @@ const FundTransfer = () => {
                 required
               >
                 <option value="">Select User</option>
-                {users.map((user) => (
+                {users.filter((user) => user.id !== Number(toUser)).map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.name} ({user.email})
                   </option>
@@ -64,19 +64,6 @@ const FundTransfer = () => {
                 // onChange={(e) => setAmount(e.target.value)}
                 required
               />
-            </div>
-            <div className="form-group">
-              <label>Transaction Type:</label>
-              <select
-                className="form-select"
-                // value={transactionType}
-                // onChange={(e) => setTransactionType(e.target.value)}
-                required
-              >
-                <option value="">Select Type</option>
-                <option value="deposit">Deposit</option>
-                <option value="payment">Withdrawal</option>
-              </select>
             </div>
             <div className="form-group">
               <label>Transaction Mode:</label>
