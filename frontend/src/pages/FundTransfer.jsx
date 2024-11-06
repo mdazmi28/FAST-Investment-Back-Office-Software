@@ -6,6 +6,8 @@ const FundTransfer = () => {
   const [fromUser, setFromUser] = useState("");
   const [toUser, setToUser] = useState("");
 
+  console.log(fromUser)
+
   useEffect(() => {
     api
       .get("/api/admin/customers/")
@@ -46,7 +48,7 @@ const FundTransfer = () => {
                 required
               >
                 <option value="">Select User</option>
-                {users.filter((user) => user.id !== fromUser).map((user) => (
+                {users.filter((user) => user.id !== Number(fromUser)).map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.name} ({user.email})
                   </option>
