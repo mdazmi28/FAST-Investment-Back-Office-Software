@@ -22,7 +22,7 @@ const FundTransfer = () => {
             // onSubmit={handleSubmit}
             className="border mt-4 p-4"
           >
-            <h2>Create a Transaction</h2>
+            <h2>Fund Transfer</h2>
             <div className="form-group">
               <label>From User:</label>
               <select
